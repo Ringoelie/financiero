@@ -125,6 +125,7 @@
       // En rotativos (tarjetas, cupos) el mínimo baja cuando baja el saldo.
       minPct: balance > 0 ? payment / balance : 0,
       fee: Math.max(0, parseNumber(d.monthlyFee)),
+      payroll: Boolean(d.payroll),
       isNew: false,
     };
   }
@@ -141,18 +142,27 @@
     };
   }
 
+  // Veces que se recibe un ingreso en un mes.
+  const FREQUENCY = { mensual: 1, quincenal: 2, semanal: 52 / 12 };
+
+  function monthlyAmount(x) {
+    return Math.max(0, parseNumber(x.amount)) * (FREQUENCY[x.frequency] || 1);
+  }
+
   function normalizeInput(input) {
-    const incomes = (input.incomes || []).map((x) => Math.max(0, parseNumber(x.amount)));
-    const expenses = (input.expenses || []).map((x) => Math.max(0, parseNumber(x.amount)));
-    const income = sum(incomes);
-    const expense = sum(expenses);
+    const expense = sum((input.expenses || []).map(monthlyAmount));
     const buffer = Math.max(0, parseNumber(input.buffer));
     const debts = (input.debts || []).map(normalizeDebt).filter((d) => d.balance > EPS);
+    // Las libranzas ya vienen descontadas del neto de la colilla: se devuelven
+    // al ingreso para que el plan las trate como cualquier otra cuota.
+    const payrollAddBack = sum(debts.filter((d) => d.payroll), (d) => d.payment + d.fee);
+    const netIncome = sum((input.incomes || []).map(monthlyAmount));
+    const income = netIncome + payrollAddBack;
     const offers = (input.offers || [])
       .map(normalizeOffer)
       .filter((o) => o.maxAmount > 0 && o.term > 0);
     const priority = PRIORITY_WEIGHTS[input.priority] ? input.priority : 'balanceado';
-    return { income, expense, buffer, debts, offers, priority };
+    return { income, netIncome, payrollAddBack, expense, buffer, debts, offers, priority };
   }
 
   /* ---------- Simulación ---------- */
@@ -445,6 +455,8 @@
 
     const summary = {
       income: n.income,
+      netIncome: n.netIncome,
+      payrollAddBack: n.payrollAddBack,
       expense: n.expense,
       buffer: n.buffer,
       budget,
@@ -567,6 +579,7 @@
     MAX_MONTHS,
     STRATEGIES,
     PRIORITY_WEIGHTS,
+    FREQUENCY,
     parseNumber,
     monthlyRate,
     toEA,

@@ -151,3 +151,37 @@ test('sin deudas no hay escenarios', () => {
   const r = P.plan({ incomes: [{ amount: 100 }], debts: [] });
   assert.equal(r.best, null);
 });
+
+test('ingresos quincenales y semanales se llevan a valor mensual', () => {
+  const n = P.normalizeInput({
+    incomes: [
+      { amount: '676.159', frequency: 'quincenal' },
+      { amount: '120.000', frequency: 'semanal' },
+      { amount: '100.000' },
+    ],
+    debts: [],
+  });
+  close(n.income, 676159 * 2 + 120000 * 52 / 12 + 100000, 0.01);
+});
+
+test('una libranza descontada por nómina no se cuenta dos veces', () => {
+  // El neto de la colilla ya descontó la cuota del fondo de empleados.
+  const base = {
+    incomes: [{ amount: '676.159', frequency: 'quincenal' }],
+    expenses: [{ amount: '900.000' }],
+    debts: [
+      { id: 'f', name: 'Fondo de empleados', balance: '6.000.000', rate: '1,2', rateType: 'MV', payment: '540.276', kind: 'cuota', payroll: true },
+      { id: 't', name: 'Tarjeta', balance: '2.000.000', rate: '28', rateType: 'EA', payment: '150.000', kind: 'rotativo' },
+    ],
+  };
+  const r = P.plan(base);
+  close(r.summary.netIncome, 1352318, 0.01);
+  close(r.summary.income, 1352318 + 540276, 0.01);
+  // Lo que queda para abonar = neto - gastos - cuotas que NO salen por nómina.
+  close(r.summary.extraNow, 1352318 - 900000 - 150000, 0.01);
+  assert.ok(r.best.metrics.feasible);
+
+  // Sin marcar la libranza, el mismo neto parecería no alcanzar.
+  const wrong = P.plan({ ...base, debts: base.debts.map((d) => ({ ...d, payroll: false })) });
+  assert.ok(wrong.summary.extraNow < 0);
+});

@@ -10,11 +10,14 @@ Abre `index.html` en el navegador. No necesita instalación ni servidor. Los dat
 solo en tu navegador (`localStorage`). Con **Copiar mis datos** y **Pegar datos** puedes
 moverlos a otro equipo.
 
-1. **Ingresos**: lo que recibes neto cada mes.
+1. **Ingresos**: el neto de tu colilla de pago, al mes, por quincena o por semana.
 2. **Gastos fijos**: arriendo, mercado, servicios, transporte… sin contar las deudas.
    El **colchón mensual** es lo que quieres seguir ahorrando mientras pagas.
 3. **Deudas**: saldo actual, tasa (% E.A., % mensual o N.A.M.V.), cuota o pago mínimo, tipo
-   (cuota fija o rotativo como tarjetas) y seguros o cuota de manejo.
+   (cuota fija o rotativo como tarjetas) y seguros o cuota de manejo. Si la cuota te la
+   descuentan por nómina (libranza, fondo de empleados), marca **Me la descuentan por nómina**:
+   el plan la suma de vuelta al ingreso para no contarla dos veces, porque el neto de la
+   colilla ya la restó.
 4. **Ofertas de crédito**: compras de cartera o libre inversión con monto máximo, tasa,
    plazo, comisión de apertura y seguro mensual.
 5. Elige qué te importa más: **pagar menos intereses**, **equilibrio** o **más flujo de caja**.

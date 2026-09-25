@@ -47,9 +47,9 @@
   }
 
   const blankRow = {
-    incomes: () => ({ id: newId('i'), name: '', amount: '' }),
+    incomes: () => ({ id: newId('i'), name: '', amount: '', frequency: 'mensual' }),
     expenses: () => ({ id: newId('e'), name: '', amount: '' }),
-    debts: () => ({ id: newId('d'), name: '', balance: '', rate: '', rateType: 'EA', payment: '', kind: 'cuota', monthlyFee: '' }),
+    debts: () => ({ id: newId('d'), name: '', balance: '', rate: '', rateType: 'EA', payment: '', kind: 'cuota', monthlyFee: '', payroll: false }),
     offers: () => ({ id: newId('o'), name: '', maxAmount: '', rate: '', rateType: 'EA', termMonths: '60', feePct: '0', monthlyInsurance: '' }),
   };
 
@@ -186,7 +186,15 @@
     return h('label', { for: id }, label, sel);
   }
 
+  const FREQUENCIES = [['mensual', 'al mes'], ['quincenal', 'por quincena'], ['semanal', 'por semana']];
   const RATE_TYPES = [['EA', '% E.A.'], ['MV', '% mensual'], ['NA', '% N.A.M.V.']];
+
+  function checkField(list, row, key, label, hint) {
+    const id = `${list}-${row.id}-${key}`;
+    const input = h('input', { id, type: 'checkbox', 'data-list': list, 'data-row': row.id, 'data-field': key });
+    input.checked = Boolean(row[key]);
+    return h('label', { for: id, class: 'check' }, input, h('span', null, h('span', { text: label }), h('small', { text: hint })));
+  }
 
   function removeBtn(list, row, what) {
     return h('button', { type: 'button', class: 'ghost', 'data-remove': list, 'data-row': row.id, 'aria-label': 'Eliminar ' + what, title: 'Eliminar' }, '✕');
@@ -195,10 +203,12 @@
   function renderSimpleList(list, placeholder) {
     const box = $('#list-' + list);
     box.textContent = '';
+    const withFreq = list === 'incomes';
     for (const row of state[list]) {
-      box.append(h('div', { class: 'line-row' },
+      box.append(h('div', { class: 'line-row' + (withFreq ? ' with-freq' : '') },
         field(list, row, 'name', 'Concepto', { hideLabel: true, placeholder }),
-        field(list, row, 'amount', 'Valor mensual', { hideLabel: true, cls: 'money', inputmode: 'decimal', placeholder: 'Valor mensual' }),
+        field(list, row, 'amount', 'Valor', { hideLabel: true, cls: 'money', inputmode: 'decimal', placeholder: withFreq ? 'Valor neto' : 'Valor mensual' }),
+        withFreq ? selectField(list, row, 'frequency', FREQUENCIES, 'Cada cuánto', true) : null,
         removeBtn(list, row, 'fila')));
     }
   }
@@ -220,6 +230,7 @@
               selectField('debts', d, 'rateType', RATE_TYPES, 'Tipo de tasa', true))),
           selectField('debts', d, 'kind', [['cuota', 'Cuota fija (crédito)'], ['rotativo', 'Rotativo (tarjeta, cupo)']], 'Tipo de deuda'),
           field('debts', d, 'monthlyFee', 'Seguros y cuota de manejo al mes', { cls: 'money', inputmode: 'decimal', placeholder: '0' })),
+        checkField('debts', d, 'payroll', 'Me la descuentan por nómina (libranza)', 'Ya viene restada del neto de tu colilla. Escribe la cuota del mes: si es por quincena, multiplícala por 2.'),
         h('p', { class: 'meta', id: 'meta-debts-' + d.id })));
       updateDebtMeta(d);
     });
@@ -295,8 +306,8 @@
   }
 
   function renderTotals() {
-    const total = (list, key) => state[list].reduce((t, r) => t + P.parseNumber(r[key]), 0);
-    $('#t-incomes').textContent = money(total('incomes', 'amount'));
+    const total = (list, key) => state[list].reduce((t, r) => t + P.parseNumber(r[key]) * (P.FREQUENCY[r.frequency] || 1), 0);
+    $('#t-incomes').textContent = money(total('incomes', 'amount')) + ' al mes';
     $('#t-expenses').textContent = money(total('expenses', 'amount'));
     $('#t-debts').textContent = money(total('debts', 'balance'));
     $('#t-offers').textContent = state.offers.length ? state.offers.length + (state.offers.length === 1 ? ' oferta' : ' ofertas') : '';
@@ -322,7 +333,7 @@
     if (t.dataset.list) {
       const row = state[t.dataset.list].find((r) => r.id === t.dataset.row);
       if (!row) return;
-      row[t.dataset.field] = t.value;
+      row[t.dataset.field] = t.type === 'checkbox' ? t.checked : t.value;
       if (t.dataset.list === 'debts') {
         if (t.dataset.field === 'kind') renderDebts();
         else updateDebtMeta(row);
@@ -541,7 +552,9 @@
     else pill = h('span', { class: 'pill good', text: 'Hay margen' });
     const cell = (label, value, extra) => h('div', null, h('span', { class: 'eyebrow', text: label }), h('span', { class: 'v', text: value }), extra || null);
     return h('section', { class: 'strip', 'aria-label': 'Resumen del mes' },
-      cell('Ingresos', money(sm.income)),
+      cell('Ingresos al mes', money(sm.income), sm.payrollAddBack > 0
+        ? h('span', { class: 'small muted', text: `Neto ${money(sm.netIncome)} + libranzas ${money(sm.payrollAddBack)}` })
+        : null),
       cell('Gastos + colchón', money(sm.expense + sm.buffer)),
       cell('Cuotas de deudas hoy', money(sm.requiredNow), h('span', { class: 'small muted', text: 'Deuda total ' + money(sm.totalDebt) })),
       cell('Queda para abonar', money(sm.extraNow), pill));
