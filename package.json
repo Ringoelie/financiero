@@ -1,0 +1,11 @@
+{
+  "name": "plan-cero-deudas",
+  "version": "1.0.0",
+  "description": "Planificador para salir de deudas: compara estrategias de pago y ofertas de crédito de consolidación.",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "start": "npx --yes serve ."
+  },
+  "license": "MIT"
+}

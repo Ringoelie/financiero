@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Plan Cero Deudas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <p class="eyebrow">Planificador de deudas</p>
+      <h1>Plan Cero <span>Deudas</span></h1>
+      <p class="muted">Registra lo que ganas, lo que gastas y lo que debes. El plan compara estrategias de pago y ofertas de crédito para encontrar la ruta más corta y barata a cero deudas sin ahogar tu flujo de caja.</p>
+    </div>
+    <div class="top-actions">
+      <button type="button" id="btn-copy">Copiar mis datos</button>
+      <button type="button" id="btn-import">Pegar datos</button>
+      <button type="button" id="btn-reset">Empezar en blanco</button>
+    </div>
+  </header>
+
+  <div id="import-box" class="panel" hidden style="margin-bottom:20px">
+    <label for="import-text">Pega aquí los datos que copiaste antes</label>
+    <textarea id="import-text" spellcheck="false"></textarea>
+    <div class="top-actions">
+      <button type="button" class="primary" id="btn-import-apply">Cargar datos</button>
+      <button type="button" id="btn-import-cancel">Cancelar</button>
+      <span id="import-msg" class="small muted"></span>
+    </div>
+  </div>
+
+  <div class="layout">
+    <aside class="inputs" aria-label="Tus números">
+      <div id="example-banner" class="banner" hidden>
+        <span>Estás viendo datos de ejemplo. Reemplázalos con los tuyos.</span>
+        <button type="button" id="btn-clear-example">Borrar ejemplo</button>
+      </div>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Ingresos</h2>
+          <span class="total" id="t-incomes"></span>
+        </div>
+        <p class="small muted">Lo que recibes neto cada mes: salario, honorarios, arriendos.</p>
+        <div class="rows" id="list-incomes"></div>
+        <button type="button" class="add" data-add="incomes">+ Agregar ingreso</button>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Gastos fijos</h2>
+          <span class="total" id="t-expenses"></span>
+        </div>
+        <p class="small muted">Lo que pagas cada mes sin contar las deudas: arriendo, mercado, servicios, transporte.</p>
+        <div class="rows" id="list-expenses"></div>
+        <button type="button" class="add" data-add="expenses">+ Agregar gasto</button>
+        <div class="grid2">
+          <label for="f-buffer">Ahorro o colchón mensual
+            <input id="f-buffer" class="money" inputmode="decimal" data-field-root="buffer" placeholder="0">
+          </label>
+          <label for="f-start">Mes de inicio
+            <input id="f-start" type="month" data-field-root="startMonth">
+          </label>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Deudas</h2>
+          <span class="total" id="t-debts"></span>
+        </div>
+        <p class="small muted">Saldo que debes hoy, tasa y la cuota o pago mínimo del extracto.</p>
+        <div class="rows" id="list-debts"></div>
+        <button type="button" class="add" data-add="debts">+ Agregar deuda</button>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Ofertas de crédito</h2>
+          <span class="total" id="t-offers"></span>
+        </div>
+        <p class="small muted">Compras de cartera o créditos de libre inversión que te ofrecen. El plan decide si conviene tomarlos y qué deudas pagar con ellos.</p>
+        <div class="rows" id="list-offers"></div>
+        <button type="button" class="add" data-add="offers">+ Agregar oferta</button>
+      </section>
+
+      <section class="panel">
+        <h2>Ajustes</h2>
+        <div class="grid2">
+          <label for="f-currency">Moneda
+            <select id="f-currency" data-field-root="currency">
+              <option value="COP">Peso colombiano (COP)</option>
+              <option value="MXN">Peso mexicano (MXN)</option>
+              <option value="CLP">Peso chileno (CLP)</option>
+              <option value="ARS">Peso argentino (ARS)</option>
+              <option value="PEN">Sol peruano (PEN)</option>
+              <option value="USD">Dólar (USD)</option>
+              <option value="EUR">Euro (EUR)</option>
+            </select>
+          </label>
+          <label for="f-ref">Tasa de referencia para sugerir crédito (% E.A.)
+            <input id="f-ref" class="rate" inputmode="decimal" data-field-root="referenceRate" placeholder="24">
+          </label>
+        </div>
+      </section>
+    </aside>
+
+    <main class="results" id="results" aria-live="polite"></main>
+  </div>
+</div>
+<script src="src/engine.js"></script>
+<script src="src/app.js"></script>
+</body>
+</html>
