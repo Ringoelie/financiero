@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "test": "node --test tests/*.test.js",
+    "build": "rm -rf dist && mkdir dist && cp -r index.html src dist/",
     "start": "npx --yes serve ."
   },
   "license": "MIT"

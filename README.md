@@ -62,3 +62,16 @@ Requiere Node 18 o superior.
 
 > Es una herramienta de planeación, no una asesoría financiera. Antes de tomar un crédito,
 > confirma que la tasa no supere la tasa de usura vigente y pide la tabla de amortización.
+
+## Publicar en Cloudflare Pages
+
+El flujo `.github/workflows/pages.yml` corre las pruebas, arma la carpeta `dist/` y la publica
+en Cloudflare Pages (proyecto `plan-cero-deudas`) en cada push. Necesita dos secretos del
+repositorio (Settings → Secrets and variables → Actions):
+
+- `CLOUDFLARE_API_TOKEN`: token con permiso *Account → Cloudflare Pages → Edit*.
+- `CLOUDFLARE_ACCOUNT_ID`: el ID de tu cuenta de Cloudflare.
+
+Sin esos secretos el flujo corre las pruebas y omite la publicación.
+
+A mano: `npm run build && npx wrangler pages deploy dist --project-name=plan-cero-deudas`.
